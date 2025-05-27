@@ -1,7 +1,8 @@
 # Maulana AI
 
 **Maulana AI** adalah chatbot AI sederhana yang dibuat menggunakan **HTML**, **CSS**, dan **JavaScript**, dengan integrasi ke **Google Gemini API**.
-
+## Tampilan output 
+[![IMG-20250528-003406.jpg](https://i.postimg.cc/tCFT5tpG/IMG-20250528-003406.jpg)](https://postimg.cc/8jPNkv7Z)
 ## Fitur
 
 - Chatbot AI dengan koneksi ke Google Gemini

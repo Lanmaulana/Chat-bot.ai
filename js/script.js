@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userInput = document.getElementById('user-input');
   const chatBox = document.getElementById('chat-box');
 
-  
+
   chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const message = userInput.value.trim();
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const aiReply = await getAIResponse(message);
       removeTypingIndicator();
-      
+
       appendAndAnimateBotMessage(aiReply);
     } catch (error) {
       console.error("Error:", error);
@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+
   function appendUserMessage(message) {
+
     const messageWrapper = document.createElement('div');
     messageWrapper.className = 'message-wrapper user';
     messageWrapper.innerHTML = `
@@ -37,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chatBox.appendChild(messageWrapper);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
+
+
   async function appendAndAnimateBotMessage(text) {
     const messageWrapper = document.createElement('div');
     messageWrapper.className = 'message-wrapper bot';
@@ -46,13 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     const messageDiv = messageWrapper.querySelector('.message');
     chatBox.appendChild(messageWrapper);
+
+   
     const parts = text.split(/(```[\s\S]*?```)/g);
 
     for (const part of parts) {
-      if (part.startsWith('```')) 
+      if (part.startsWith('```')) {
+
         const codeElement = createCodeBlockElement(part);
         messageDiv.appendChild(codeElement);
       } else if (part.trim() !== '') {
+
         for (let i = 0; i < part.length; i++) {
           messageDiv.innerHTML += part[i] === '\n' ? '<br>' : part[i];
           chatBox.scrollTop = chatBox.scrollHeight;
@@ -63,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  
+
   function createCodeBlockElement(codeBlockText) {
     const code = codeBlockText.replace(/```/g, '').trim();
     const langMatch = code.match(/^[a-z]+/);
@@ -93,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return codeContainer;
   }
 
-  
+
   async function getAIResponse(userMessage) {
     try {
       
@@ -109,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  
+
   function showTypingIndicator() {
     const typingHTML = `
       <div class="message-wrapper bot typing-indicator">
@@ -128,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (indicator) indicator.remove();
   }
   
-  
+
   function createRain() {
     const rainContainer = document.getElementById('rain-container');
     if (!rainContainer) return;
@@ -145,10 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  
+
   window.addEventListener("load", () => {
     const introElement = document.getElementById("intro-message");
-    if(introElement) introElement.textContent = "Halo! Saya Maulana AI, apa yang bisa saya bantu?"; // Pesan pembuka langsung tampil
+    if(introElement) introElement.textContent = "Halo! Saya Maulana AI, apa yang bisa saya bantu?"; 
     
     createRain();
 

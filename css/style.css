@@ -1,51 +1,176 @@
-/* --- Reset & Pengaturan Dasar --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { height: 100%; }
-body { height: 100%; overflow: hidden; color: #e0e0e0; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; background-color: #0d1117; position: relative; }
+/* --- Pengaturan Dasar & Font --- */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #0d1117; /* Latar belakang gelap */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #e0e0e0;
+    overflow: hidden; /* Mencegah scroll di body */
+}
 
-/* --- Animasi Hujan --- */
-#rain-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
-.raindrop { position: absolute; bottom: 100%; width: 1.5px; background: linear-gradient(to top, rgba(0, 255, 255, 0), rgba(0, 255, 255, 0.4)); animation: fall linear infinite; }
-@keyframes fall { to { transform: translateY(110vh); } }
+/* --- [TAMBAHAN] Animasi Hujan --- */
+#rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
 
-/* --- Styling Chatbot --- */
-.chat-container { width: 95%; height: 95%; max-width: 800px; max-height: 900px; background: rgba(13, 17, 23, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); display: flex; flex-direction: column; z-index: 1; animation: fadeIn 0.5s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-header { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-header i { font-size: 1.5rem; color: #00aaff; }
-header h1 { font-size: 1.25rem; font-weight: 600; }
-.chat-box { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.raindrop {
+    position: absolute;
+    bottom: 100%;
+    width: 1.5px;
+    background: linear-gradient(to top, rgba(0, 255, 255, 0), rgba(0, 255, 255, 0.4));
+    animation: fall linear infinite;
+}
 
-/* --- Bubble Chat (User di Kanan, Bot di Kiri) --- */
-.user-message, .bot-message { padding: 12px 16px; border-radius: 18px; line-height: 1.6; max-width: 85%; animation: slideIn 0.4s ease-out forwards; word-wrap: break-word; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fall {
+    to {
+        transform: translateY(110vh);
+    }
+}
 
+
+/* --- Tampilan Chatbot Modern --- */
+.chat-container {
+    width: 95%;
+    max-width: 500px;
+    background: rgba(22, 27, 34, 0.8); /* Warna lebih gelap dengan transparansi */
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    backdrop-filter: blur(10px); /* Efek blur di belakang */
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1;
+}
+
+.chat-header {
+    background-color: rgba(33, 38, 45, 0.8);
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    display: flex;
+    max-width: 80%;
+    animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    line-height: 1.6;
+}
+
+/* Pesan dari Pengguna (Kanan) */
 .user-message {
-  background-color: #005c97; /* Warna bubble pengguna */
-  color: #fff;
-  align-self: flex-end; /* <<< DIUBAH: Pengguna sekarang di KANAN */
-  border-bottom-right-radius: 4px; /* Ekor bubble di kanan */
-  border-bottom-left-radius: 18px;
+    align-self: flex-end;
 }
+.user-message .message-content {
+    background-color: #005c97; /* Warna biru */
+    border-bottom-right-radius: 4px;
+}
+
+/* Pesan dari Bot (Kiri) */
 .bot-message {
-  background-color: #2c3e50; /* Warna bubble bot */
-  color: #e0e0e0;
-  align-self: flex-start; /* <<< DIUBAH KEMBALI: Bot sekarang di KIRI */
-  border-bottom-left-radius: 4px; /* Ekor bubble di kiri */
-  border-bottom-right-radius: 18px;
+    align-self: flex-start;
+}
+.bot-message .message-content {
+    background-color: #2c3e50; /* Warna abu-abu gelap */
+    border-bottom-left-radius: 4px;
 }
 
-/* Typing indicator sekarang mengikuti posisi bot (di kiri) */
-.typing-indicator { align-self: flex-start; background-color: #2c3e50; padding: 14px 16px; border-radius: 18px; border-bottom-left-radius: 4px; display: flex; gap: 6px; }
-.typing-indicator span { width: 8px; height: 8px; background-color: #fff; border-radius: 50%; display: inline-block; animation: blink 1.4s infinite; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 50% { opacity: 0.3; } }
+.chat-input-container {
+    display: flex;
+    padding: 15px;
+    background-color: rgba(33, 38, 45, 0.8);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-/* Sisa CSS tidak berubah */
-footer { padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
-#chat-form { display: flex; align-items: center; gap: 12px; background: #2c3e50; border-radius: 12px; padding: 8px; }
-textarea { flex-grow: 1; border: none; outline: none; background: transparent; color: white; font-size: 1rem; font-family: 'Inter', sans-serif; resize: none; height: 24px; max-height: 120px; padding-left: 8px; }
-textarea::placeholder { color: #888; }
-#send-btn { width: 40px; height: 40px; border: none; background: #00aaff; color: white; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: background-color 0.3s; }
-#send-btn:hover { background-color: #0088cc; }
+#user-input {
+    flex-grow: 1;
+    padding: 12px;
+    border: 1px solid #4a4a4a;
+    border-radius: 10px;
+    font-size: 1rem;
+    background-color: #161b22;
+    color: #e0e0e0;
+    outline: none;
+}
+
+#send-button {
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+}
+#send-button:hover {
+    background-color: #0056b3;
+}
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  margin: 10px;
+}
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  margin: 10px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background: #00ccff;
+  border-radius: 50%;
+  animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-5px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.3; }
+}

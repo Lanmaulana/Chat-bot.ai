@@ -121,6 +121,9 @@ window.addEventListener("load", () => {
     });
   }
 });
+/* Tambahkan di berkas JavaScript utama */
+
+/* Formatter jawaban AI */
 function formatAIResponse(rawText) {
   let formatted = rawText
     .replace(/</g, '&lt;')
@@ -130,14 +133,12 @@ function formatAIResponse(rawText) {
     .replace(/__(.*?)__/g, '$1')
     .replace(/_(.*?)_/g, '$1');
 
-  // Format blok kode jadi <code> dan tambahkan tombol salin
-  formatted = formatted.replace(/```([\s\S]*?)```/g, (match, codeContent) => {
-    const cleanCode = codeContent.trim();
-    const encoded = cleanCode.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-    const id = `code-${Math.random().toString(36).substr(2, 9)}`;
+  // blok ``` ... ```
+  formatted = formatted.replace(/```([\s\S]*?)```/g, (_, codeContent) => {
+    const id = `code-${Math.random().toString(36).slice(2)}`;
     return `
-      <div style="position: relative;">
-        <code id="${id}">${encoded}</code>
+      <div style="position:relative;">
+        <code id="${id}">${codeContent.trim()}</code>
         <button class="copy-btn" onclick="copyCode('${id}')">Salin kode</button>
       </div>
     `;
@@ -147,16 +148,29 @@ function formatAIResponse(rawText) {
     .replace(/\n{2,}/g, '<br><br>')
     .replace(/\n/g, '<br>');
 }
-function copyCode(id) {
-  const codeEl = document.getElementById(id);
-  if (!codeEl) return;
 
-  const text = codeEl.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const button = codeEl.nextElementSibling;
-    if (button) {
-      button.textContent = 'Tersalin!';
-      setTimeout(() => button.textContent = 'Salin kode', 1500);
+/* Fungsi salin kode */
+function copyCode(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = el.nextElementSibling;
+    if (btn) {
+      btn.textContent = 'Tersalin!';
+      setTimeout(() => (btn.textContent = 'Salin kode'), 1500);
     }
   });
+}
+
+/* Ganti appendMessage supaya blok kode dirender */
+function appendMessage(sender, message) {
+  const div = document.createElement('div');
+  div.className = sender === 'user' ? 'user-message' : 'bot-message';
+  if (sender === 'bot') {
+    div.innerHTML = message;      // render HTML hasil formatter
+  } else {
+    div.textContent = message;    // teks biasa dari user
+  }
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }

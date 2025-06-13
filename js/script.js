@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const userInput = document.getElementById('user-input');
   const chatBox = document.getElementById('chat-box');
 
-
   chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const message = userInput.value.trim();
@@ -11,14 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     appendUserMessage(message);
     userInput.value = '';
-    userInput.style.height = 'auto';
+    userInput.style.height = 'auto'; 
 
     showTypingIndicator();
 
     try {
       const aiReply = await getAIResponse(message);
       removeTypingIndicator();
-
       appendAndAnimateBotMessage(aiReply);
     } catch (error) {
       console.error("Error:", error);
@@ -26,21 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
       appendAndAnimateBotMessage("Maaf, terjadi kesalahan. Silakan coba lagi.");
     }
   });
-
-
   function appendUserMessage(message) {
-
     const messageWrapper = document.createElement('div');
     messageWrapper.className = 'message-wrapper user';
     messageWrapper.innerHTML = `
       <div class="message-icon"><i class="fa-solid fa-user"></i></div>
-      <div class="user-message">${message}</div>
+      <div class="user-message"></div>
     `;
+    messageWrapper.querySelector('.user-message').textContent = message;
     chatBox.appendChild(messageWrapper);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
-
-
   async function appendAndAnimateBotMessage(text) {
     const messageWrapper = document.createElement('div');
     messageWrapper.className = 'message-wrapper bot';
@@ -51,30 +45,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = messageWrapper.querySelector('.message');
     chatBox.appendChild(messageWrapper);
 
-   
     const parts = text.split(/(```[\s\S]*?```)/g);
 
     for (const part of parts) {
       if (part.startsWith('```')) {
-
         const codeElement = createCodeBlockElement(part);
         messageDiv.appendChild(codeElement);
       } else if (part.trim() !== '') {
-
+        const textElement = document.createElement('span');
+        messageDiv.appendChild(textElement);
         for (let i = 0; i < part.length; i++) {
-          messageDiv.innerHTML += part[i] === '\n' ? '<br>' : part[i];
+          textElement.innerHTML += part[i] === '\n' ? '<br>' : part[i];
           chatBox.scrollTop = chatBox.scrollHeight;
-          await new Promise(r => setTimeout(r, 15));
+          await new Promise(r => setTimeout(r, 20)); 
         }
       }
     }
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-
   function createCodeBlockElement(codeBlockText) {
     const code = codeBlockText.replace(/```/g, '').trim();
-    const langMatch = code.match(/^[a-z]+/);
+    const langMatch = code.match(/^[a-z_]+/);
     const language = langMatch ? langMatch[0] : 'code';
     const finalCode = langMatch ? code.substring(langMatch[0].length).trim() : code;
 
@@ -103,40 +95,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   async function getAIResponse(userMessage) {
+
     try {
-      
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
       if (userMessage.toLowerCase().includes("coding html")) {
         return `Tentu, ini adalah contoh kode HTML dasar:\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Contoh Halaman</title>\n</head>\n<body>\n  <h1>Halo, Maulana!</h1>\n</body>\n</html>\n\`\`\`\nSemoga ini membantu!`;
       }
-      return "Halo juga! Ada lagi yang bisa saya bantu?";
+       if (userMessage.toLowerCase().includes("jelaskan css")) {
+          return `CSS (Cascading Style Sheets) adalah bahasa untuk mendesain tampilan halaman web.\n\nBerikut contoh penggunaan:\n\`\`\`css\nbody {\n  font-family: sans-serif;\n  background-color: #f0f0f0;\n}\n\`\`\``;
+      }
+      return "Halo! Ada yang bisa saya bantu? Coba tanyakan 'coding html' atau 'jelaskan css'.";
 
     } catch (error) {
       console.error("Error:", error);
       return "Terjadi kesalahan saat menghubungi server.";
     }
   }
-
-
   function showTypingIndicator() {
-    const typingHTML = `
-      <div class="message-wrapper bot typing-indicator">
-        <div class="message-icon"><i class="fa-solid fa-robot"></i></div>
-        <div class="message">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    `;
+    const typingHTML = `<div class="message-wrapper bot typing-indicator"><div class="message-icon"><i class="fa-solid fa-robot"></i></div><div class="bot-message"><span></span><span></span><span></span></div></div>`;
     chatBox.insertAdjacentHTML('beforeend', typingHTML);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
-
   function removeTypingIndicator() {
     const indicator = chatBox.querySelector('.typing-indicator');
     if (indicator) indicator.remove();
   }
-  
-
   function createRain() {
     const rainContainer = document.getElementById('rain-container');
     if (!rainContainer) return;
@@ -152,11 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
       rainContainer.appendChild(drop);
     }
   }
-  
-
-  window.addEventListener("load", () => {
+  function init() {
     const introElement = document.getElementById("intro-message");
-    if(introElement) introElement.textContent = "Halo! Saya Maulana AI, apa yang bisa saya bantu?"; 
+    if(introElement) {
+        introElement.innerHTML = "Halo! Saya Maulana AI, apa yang bisa saya bantu? Coba tanyakan 'coding html'.";
+    }
     
     createRain();
 
@@ -167,5 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.addEventListener("click", () => music.play(), { once: true });
       });
     }
-  });
+  }
+
+  init();
 });

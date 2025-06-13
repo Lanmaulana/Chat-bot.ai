@@ -1,176 +1,165 @@
-// --- KODE UTAMA ANDA (TIDAK DIUBAH) ---
+// --- KODE UTAMA DENGAN LOGIKA YANG DISEMPURNAKAN ---
 
-const chatForm = document.getElementById('chat-form');
-const userInput = document.getElementById('user-input');
-const chatBox = document.getElementById('chat-box');
+document.addEventListener('DOMContentLoaded', () => {
+  const chatForm = document.getElementById('chat-form');
+  const userInput = document.getElementById('user-input');
+  const chatBox = document.getElementById('chat-box');
 
-chatForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const message = userInput.value.trim();
-  if (!message) return;
+  // --- Event Listener Utama ---
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
 
-  appendMessage('user', message);
-  userInput.value = '';
+    appendUserMessage(message);
+    userInput.value = '';
+    userInput.style.height = 'auto';
 
-  const typingDiv = createTypingIndicator();
-  chatBox.appendChild(typingDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
+    showTypingIndicator();
 
-  const aiReply = await getAIResponse(message);
-  typingDiv.remove();
-  await typeEffect(aiReply);
-});
-
-function appendMessage(sender, message) {
-  const div = document.createElement('div');
-  div.className = sender === 'user' ? 'user-message' : 'bot-message';
-  div.textContent = message;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function typeEffect(text) {
-  const div = document.createElement('div');
-  div.className = 'bot-message';
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-
-  const formatted = formatAIResponse(text); // pakai formatter
-  let i = 0;
-  const typingSpeed = 2; // kecepatan ketik
-
-  function typeChar() {
-    if (i <= formatted.length) {
-      div.innerHTML = formatted.substring(0, i);
-      chatBox.scrollTop = chatBox.scrollHeight;
-      i++;
-      setTimeout(typeChar, typingSpeed);
+    try {
+      const aiReply = await getAIResponse(message);
+      removeTypingIndicator();
+      // Gunakan fungsi yang sudah disempurnakan
+      appendAndAnimateBotMessage(aiReply);
+    } catch (error) {
+      console.error("Error:", error);
+      removeTypingIndicator();
+      appendAndAnimateBotMessage("Maaf, terjadi kesalahan. Silakan coba lagi.");
     }
+  });
+
+  // --- Fungsi untuk Menampilkan Pesan Pengguna (Tetap Sama) ---
+  function appendUserMessage(message) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper user';
+    messageWrapper.innerHTML = `<div class="message-icon"><i class="fa-solid fa-user"></i></div><div class="user-message"></div>`;
+    messageWrapper.querySelector('.user-message').textContent = message;
+    chatBox.appendChild(messageWrapper);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  typeChar();
-}
+  // --- [VERSI TERBAIK] Fungsi Canggih untuk Menampilkan Pesan Bot ---
+  async function appendAndAnimateBotMessage(text) {
+    // 1. Buat bubble chat kosong untuk bot
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper bot';
+    messageWrapper.innerHTML = `<div class="message-icon"><i class="fa-solid fa-robot"></i></div><div class="bot-message"></div>`;
+    const messageDiv = messageWrapper.querySelector('.bot-message');
+    chatBox.appendChild(messageWrapper);
 
-async function getAIResponse(userMessage) {
-  try {
-    const response = await fetch("./api/gemini.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMessage }),
-    });
+    // 2. Format Markdown (bold, dll) dan pecah teks menjadi bagian teks biasa & kode
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Ganti **teks** jadi <b>teks</b>
+    const parts = formattedText.split(/(```[\s\S]*?```)/g).filter(Boolean);
 
-    const data = await response.json();
-    return data.reply || "Tidak ada jawaban.";
-  } catch (error) {
-    console.error("Error:", error);
-    return "Terjadi kesalahan saat menghubungi server.";
-  }
-}
-
-function createTypingIndicator() {
-  const div = document.createElement('div');
-  div.className = 'typing-indicator';
-  div.innerHTML = '<span></span><span></span><span></span>';
-  return div;
-}
-
-async function typeIntroMessage(text, elementId) {
-  const element = document.getElementById(elementId);
-  // Hapus pengecekan 'if (!element) return;' karena struktur HTML sekarang pasti
-  for (let i = 0; i < text.length; i++) {
-    element.textContent += text[i];
-    await new Promise(r => setTimeout(r, 40));
-  }
-}
-
-// --- FUNGSI UNTUK MEMBUAT HUJAN (DITAMBAHKAN) ---
-function createRain() {
-    const rainContainer = document.getElementById('rain-container');
-    if (!rainContainer) return; // Pengaman jika elemen tidak ada
-    const numberOfDrops = 150; 
-    
-    for (let i = 0; i < numberOfDrops; i++) {
-        const drop = document.createElement('div');
-        drop.classList.add('raindrop');
-        
-        // Atur properti acak untuk setiap tetesan
-        drop.style.left = `${Math.random() * 100}vw`;
-        drop.style.height = `${Math.random() * 120 + 20}px`;
-        drop.style.opacity = `${Math.random() * 0.4 + 0.2}`;
-        drop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
-        drop.style.animationDelay = `${Math.random() * 5}s`;
-        
-        rainContainer.appendChild(drop);
+    // 3. Tampilkan setiap bagian satu per satu
+    for (const part of parts) {
+      if (part.startsWith('```')) {
+        // Jika bagian ini adalah kode, buat elemen blok kode khusus
+        const codeElement = createCodeBlockElement(part);
+        messageDiv.appendChild(codeElement);
+      } else if (part.trim() !== '') {
+        // Jika ini teks biasa, tampilkan dengan efek mengetik
+        const textElement = document.createElement('span');
+        messageDiv.appendChild(textElement);
+        for (let i = 0; i < part.length; i++) {
+          textElement.innerHTML += part[i] === '\n' ? '<br>' : part[i];
+          chatBox.scrollTop = chatBox.scrollHeight;
+          await new Promise(r => setTimeout(r, 15)); // Kecepatan ketik
+        }
+      }
     }
-}
-
-
-window.addEventListener("load", () => {
-  typeIntroMessage("Halo! Saya Maulana AI, apa yang bisa saya bantu?", "intro-message");
-
-  // --- PANGGIL ANIMASI HUJAN DI SINI (DITAMBAHKAN) ---
-  createRain();
-
-  const music = document.getElementById("bg-music");
-  if (music) { // Pengaman jika elemen musik tidak ada
-    music.volume = 0.2;
-    music.play().catch(() => {
-        document.body.addEventListener("click", () => {
-            music.play();
-        }, { once: true });
-    });
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
-});
-/* Tambahkan di berkas JavaScript utama */
 
-/* Formatter jawaban AI */
-function formatAIResponse(rawText) {
-  let formatted = rawText
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/__(.*?)__/g, '$1')
-    .replace(/_(.*?)_/g, '$1');
+  // --- Fungsi untuk Membuat Elemen Blok Kode dengan Border & Tombol Salin ---
+  function createCodeBlockElement(codeBlockText) {
+    const code = codeBlockText.replace(/```/g, '').trim();
+    const langMatch = code.match(/^[a-z_]+/);
+    const language = langMatch ? langMatch[0] : 'code';
+    const finalCode = langMatch ? code.substring(langMatch[0].length).trim() : code;
 
-  // blok ``` ... ```
-  formatted = formatted.replace(/```([\s\S]*?)```/g, (_, codeContent) => {
-    const id = `code-${Math.random().toString(36).slice(2)}`;
-    return `
-      <div style="position:relative;">
-        <code id="${id}">${codeContent.trim()}</code>
-        <button class="copy-btn" onclick="copyCode('${id}')">Salin kode</button>
+    const codeContainer = document.createElement('div');
+    codeContainer.className = 'code-block';
+    codeContainer.innerHTML = `
+      <div class="code-header">
+        <span>${language}</span>
+        <button class="copy-btn"><i class="fa-solid fa-copy"></i> Salin</button>
       </div>
+      <pre><code></code></pre>
     `;
-  });
+    codeContainer.querySelector('code').textContent = finalCode;
 
-  return formatted
-    .replace(/\n{2,}/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-}
-
-/* Fungsi salin kode */
-function copyCode(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
-    const btn = el.nextElementSibling;
-    if (btn) {
-      btn.textContent = 'Tersalin!';
-      setTimeout(() => (btn.textContent = 'Salin kode'), 1500);
-    }
-  });
-}
-
-/* Ganti appendMessage supaya blok kode dirender */
-function appendMessage(sender, message) {
-  const div = document.createElement('div');
-  div.className = sender === 'user' ? 'user-message' : 'bot-message';
-  if (sender === 'bot') {
-    div.innerHTML = message;      // render HTML hasil formatter
-  } else {
-    div.textContent = message;    // teks biasa dari user
+    const copyButton = codeContainer.querySelector('.copy-btn');
+    copyButton.addEventListener('click', () => {
+      navigator.clipboard.writeText(finalCode).then(() => {
+        copyButton.innerHTML = `<i class="fa-solid fa-check"></i> Disalin!`;
+        setTimeout(() => { copyButton.innerHTML = `<i class="fa-solid fa-copy"></i> Salin`; }, 2000);
+      });
+    });
+    return codeContainer;
   }
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  
+  // --- Fungsi untuk memanggil API Anda ---
+  async function getAIResponse(userMessage) {
+    try {
+      const response = await fetch("./api/gemini.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage }),
+      });
+      const data = await response.json();
+      return data.reply || "Tidak ada jawaban.";
+    } catch (error) {
+      console.error("Error:", error);
+      return "Terjadi kesalahan saat menghubungi server.";
+    }
+  }
+
+  // --- Fungsi utilitas lainnya (Typing Indicator & Rain Animation) ---
+  function showTypingIndicator() {
+    const typingHTML = `<div class="message-wrapper bot typing-indicator"><div class="message-icon"><i class="fa-solid fa-robot"></i></div><div class="bot-message"><span></span><span></span><span></span></div></div>`;
+    chatBox.insertAdjacentHTML('beforeend', typingHTML);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+  function removeTypingIndicator() {
+    const indicator = chatBox.querySelector('.typing-indicator');
+    if (indicator) indicator.remove();
+  }
+  
+  function createRain() {
+    const rainContainer = document.getElementById('rain-container');
+    if (!rainContainer) return;
+    const numberOfDrops = 150;
+    for (let i = 0; i < numberOfDrops; i++) {
+      const drop = document.createElement('div');
+      drop.classList.add('raindrop');
+      drop.style.left = `${Math.random() * 100}vw`;
+      drop.style.height = `${Math.random() * 120 + 20}px`;
+      drop.style.opacity = `${Math.random() * 0.4 + 0.2}`;
+      drop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
+      drop.style.animationDelay = `${Math.random() * 5}s`;
+      rainContainer.appendChild(drop);
+    }
+  }
+  
+  // --- Inisialisasi Saat Halaman Dimuat ---
+  function init() {
+    const introElement = document.getElementById("intro-message");
+    if(introElement) {
+        // Gunakan fungsi utama untuk menampilkan pesan pembuka agar formatnya juga benar
+        appendAndAnimateBotMessage("Halo! Saya Maulana AI. Apa yang bisa saya bantu? Coba tanyakan 'coding html'.");
+        introElement.parentElement.remove(); // Hapus bubble pembuka yang statis
+    }
+    createRain();
+    const music = document.getElementById("bg-music");
+    if (music) {
+      music.volume = 0.2;
+      music.play().catch(() => {
+        document.body.addEventListener("click", () => music.play(), { once: true });
+      });
+    }
+  }
+
+  init();
+});

@@ -122,17 +122,41 @@ window.addEventListener("load", () => {
   }
 });
 function formatAIResponse(rawText) {
-  // Ganti baris baru menjadi <br> agar teks tidak menumpuk
   let formatted = rawText
-    .replace(/</g, '&lt;')  // escape <
-    .replace(/>/g, '&gt;')  // escape >
-    .replace(/\n{2,}/g, '<br><br>')  // ganti double enter jadi spasi antar paragraf
-    .replace(/\n/g, '<br>'); // ganti enter biasa jadi baris baru
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/_(.*?)_/g, '$1');
 
-  // Ganti blok kode antara ``` dan ``` jadi <code> blok
-  formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
-    return `<code>${code.trim()}</code>`;
+  // Format blok kode jadi <code> dan tambahkan tombol salin
+  formatted = formatted.replace(/```([\s\S]*?)```/g, (match, codeContent) => {
+    const cleanCode = codeContent.trim();
+    const encoded = cleanCode.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+    const id = `code-${Math.random().toString(36).substr(2, 9)}`;
+    return `
+      <div style="position: relative;">
+        <code id="${id}">${encoded}</code>
+        <button class="copy-btn" onclick="copyCode('${id}')">Salin kode</button>
+      </div>
+    `;
   });
 
-  return formatted;
+  return formatted
+    .replace(/\n{2,}/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+function copyCode(id) {
+  const codeEl = document.getElementById(id);
+  if (!codeEl) return;
+
+  const text = codeEl.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const button = codeEl.nextElementSibling;
+    if (button) {
+      button.textContent = 'Tersalin!';
+      setTimeout(() => button.textContent = 'Salin kode', 1500);
     }
+  });
+}

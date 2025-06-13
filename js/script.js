@@ -2,7 +2,6 @@ const chatForm = document.getElementById('chat-form');
 const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
 
-// Ganti dengan API Key kamu
 chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const message = userInput.value.trim();
@@ -43,26 +42,17 @@ async function typeEffect(text) {
 
 async function getAIResponse(userMessage) {
   try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=MASUKAN_API_KEY_GOOGLE_GIMINI_KALIANDI_SINI",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: userMessage }],
-            },
-          ],
-        }),
-      }
-    );
+    const response = await fetch("/api/gemini", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMessage }),
+    });
 
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak ada balasan dari Gemini.";
+    return data.reply || "Tidak ada jawaban.";
   } catch (error) {
     console.error("Error:", error);
-    return "Terjadi kesalahan saat menghubungi Gemini.";
+    return "Terjadi kesalahan saat menghubungi server.";
   }
 }
 

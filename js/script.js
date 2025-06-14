@@ -1,87 +1,100 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
+    const chatBox = document.getElementById('chatMessages');
+    const input = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    async function handleSendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+        appendMessage('user', text);
+        input.value = '';
+        const typingIndicator = appendMessage('bot', 'Mengetik...');
+        try {
+            const response = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text }),
+            });
+            
+            typingIndicator.remove(); 
+            if (!response.ok) {
+                throw new Error('Respons server tidak baik.');
+            }
 
+            const data = await response.json();
+            const aiReply = data.reply || 'Tidak ada respon.';
+            appendFormattedBotMessage(aiReply);
+        } catch (error) {
+            console.error(error);
+            typingIndicator.remove();
+            appendMessage('bot', 'Maaf, terjadi kesalahan koneksi.');
+        }
+    }
+    function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        msgDiv.innerText = text;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return msgDiv;
+    }
+    function appendFormattedBotMessage(text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message bot';
+        let formattedText = text.replace(/\*/g, '').replace(/\n/g, '<br>');
+        const parts = formattedText.split(/(```[\s\S]*?```)/g).filter(Boolean);
+
+        parts.forEach(part => {
+            if (part.startsWith('```')) {
+                const code = part.replace(/```/g, '').trim().replace(/^[a-z]+\n/, '');
+                const block = document.createElement('div');
+                block.className = 'code-block';
+                block.innerText = code;
+                
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.innerText = 'Salin';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(code);
+                    btn.innerText = 'Disalin!';
+                    setTimeout(() => { btn.innerText = 'Salin'; }, 2000);
+                };
+                
+                block.appendChild(btn);
+                msgDiv.appendChild(block);
+            } else {
+                const textNode = document.createElement('p');
+                textNode.style.margin = '0'; 
+                textNode.innerHTML = part.trim();
+                msgDiv.appendChild(textNode);
+            }
+        });
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    sendButton.addEventListener('click', handleSendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            handleSendMessage();
+        }
+    });
     function createRain() {
-        const rainContainer = document.getElementById('rain-container');
+        const rainContainer = document.querySelector('.rain');
         if (!rainContainer) return;
-
-        const numberOfDrops = 150;
-
-        for (let i = 0; i < numberOfDrops; i++) {
+        for (let i = 0; i < 80; i++) {
             const drop = document.createElement('div');
             drop.classList.add('raindrop');
-
             drop.style.left = `${Math.random() * 100}vw`;
-            drop.style.height = `${Math.random() * 120 + 20}px`;
-            drop.style.opacity = `${Math.random() * 0.4 + 0.2}`;
             drop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
             drop.style.animationDelay = `${Math.random() * 5}s`;
-
             rainContainer.appendChild(drop);
         }
     }
-
-    function addMessage(sender, text) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', `${sender}-message`);
-
-        const contentDiv = document.createElement('div');
-        contentDiv.classList.add('message-content');
-        contentDiv.textContent = text;
-
-        messageDiv.appendChild(contentDiv);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    function init() {
+        appendMessage('bot', 'Hai, aku Maulana Developer! Ada yang bisa dibantu?');
+        createRain();
     }
 
-    function addTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message bot-message typing-indicator';
-        typingDiv.id = 'typing';
-        typingDiv.innerHTML = '<span></span><span></span><span></span>';
-        chatMessages.appendChild(typingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function removeTypingIndicator() {
-        const typingDiv = document.getElementById('typing');
-        if (typingDiv) typingDiv.remove();
-    }
-
-    function sendMessage() {
-        const messageText = userInput.value.trim();
-        if (messageText === '') return;
-
-        addMessage('user', messageText);
-        userInput.value = '';
-
-        addTypingIndicator();
-
-        fetch('/api/gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: messageText })
-        })
-        .then(res => res.json())
-        .then(data => {
-            removeTypingIndicator();
-            addMessage('bot', data.reply);
-        })
-        .catch(() => {
-            removeTypingIndicator();
-            addMessage('bot', '⚠️ Terjadi kesalahan server.');
-        });
-    }
-
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    createRain();
-    addMessage('bot', 'Halo! Saya Maulana AI. Silakan ketik pesan Anda.');
+    init();
 });

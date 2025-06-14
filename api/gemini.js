@@ -1,4 +1,4 @@
-// File: api/gemini.js
+// File: /api/gemini.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).end('Method Not Allowed');
@@ -6,8 +6,12 @@ export default async function handler(req, res) {
 
   const { message } = req.body;
   if (!message) {
-    return res.status(400).json({ reply: "Pesan kosong." });
+    return res.status(400).json({ reply: 'Pesan kosong.' });
   }
+
+  
+
+  // Tambahkan konteks Maulana Developer
   const context = `
 Maulana Developer adalah chatbot AI yang dirancang berdasarkan kepribadian dan keahlian Maulana Malik Ibrahim, seorang web developer asal Kalimantan Tengah.
 Maulana ahli dalam HTML, CSS, JavaScript, PHP, MySQL, Laravel,dan terbiasa menggunakan Framer Motion, React, serta membuat chatbot AI modern.
@@ -20,23 +24,20 @@ Maulana terkenal dengan semangatnya, gayanya yang profesional dan santai, serta 
   const prompt = `${context}\nUser: ${message}\nAI:`;
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: message }] }]
-        })
-      }
-    );
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      }),
+    });
 
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak ada balasan dari Gemini.";
-    res.status(200).json({ reply });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ reply: "Terjadi kesalahan server." });
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, terjadi kesalahan saat menjawab.';
+
+    return res.status(200).json({ reply });
+  } catch (error) {
+    console.error('Error from Gemini API:', error);
+    return res.status(500).json({ reply: 'Gagal menghubungi AI.' });
   }
-          }
+}

@@ -8,9 +8,7 @@ export default async function handler(req, res) {
   if (!message) {
     return res.status(400).json({ reply: 'Pesan kosong.' });
   }
-botMsg.className = "bot-message angry";
-  botMsg.textContent = "😡 Hei! Jangan pernah coba-coba hina Maulana Developer ya! Aku loyal 100%, dan siap bacotin siapa aja yang berani meremehkan dia! 💥👊";
-  
+
 
   // Tambahkan konteks Maulana Developer
   const context = `
